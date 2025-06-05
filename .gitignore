@@ -1,8 +1,5 @@
-# 1) Ignore everything by default
-*
 
 # 2) Do not ignore the .gitignore file itself
-!.gitignore
 
 # 3) Always ignore .idea
 .idea/
@@ -12,14 +9,6 @@
 vasptools.egg-info/
 vasptools.egg-info/**
 
-# 5) Unignore the vasptools directory so we can selectively include files inside it
-!vasptools/
-!vasptools/**/
-
-# 6) Ignore everything in vasptools again, then unignore *.py and *.txt
-vasptools/*
-!vasptools/**/*.py
-!vasptools/**/*.txt
 
 
 # Ignore API keys and sensitive files
@@ -27,7 +16,9 @@ vasptools/*
 *.API*
 *.zip
 potpaw_PBE_6.4_from_vsc5
-
+POSCAR
+*POSCAR*
+*.poscar
 
 
 
