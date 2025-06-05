@@ -85,7 +85,8 @@ class StructureOptimization:
         self.kspacing = kspacing
         self.kspacing_definition = kspacing_definition.lower()
         if self.kspacing_definition not in ['vasp', 'pymatgen']:
-            raise ValueError("kspacing_definition must be either 'vasp' or 'pymatgen'.")
+            raise ValueError(
+                "kspacing_definition must be either 'vasp' or 'pymatgen'.")
 
         if self.magmom is not None:
             ispin_value = self.incar_tags.get('ISPIN', None)
@@ -100,8 +101,10 @@ class StructureOptimization:
             # If kspacing is None, the KPOINTS file will not be written;
             # check that the 'KSPACING' tag is provided in the INCAR tags.
             if 'KSPACING' not in self.incar_tags:
-                raise ValueError("kspacing is None. Please provide 'KSPACING' in incar_tags to allow VASP to generate the k-points automatically.")
-            self.kpointstype = None  # Not used when no KPOINTS file is written.
+                raise ValueError(
+                    "kspacing is None. Please provide 'KSPACING' in incar_tags to allow VASP to generate the k-points automatically.")
+            # Not used when no KPOINTS file is written.
+            self.kpointstype = None
         else:
             if self.periodicity is None:
                 # For non-periodic (gas-phase) calculations: only a single Gamma point is used.
@@ -124,7 +127,7 @@ class StructureOptimization:
     def write_input_files(self, folder_name="bulk"):
         """
         Write INCAR, KPOINTS (if kspacing is provided), POSCAR, and POTCAR to `folder_name`.
-        If the folder already exists, print a warning and do nothing.
+        If the folder will be created if it does not exist.
 
         Parameters
         ----------
@@ -233,7 +236,8 @@ class StructureOptimization:
         # Case 1: If kspacing is None.
         if self.kspacing is None:
             if "KSPACING" not in self.incar_tags:
-                raise ValueError("When kspacing is None, 'KSPACING' must be provided in incar_tags.")
+                raise ValueError(
+                    "When kspacing is None, 'KSPACING' must be provided in incar_tags.")
             return
 
         # Case 2: If periodicity is None (non-periodic: gas-phase), use a single Gamma point.
@@ -285,7 +289,8 @@ Gamma
             n2 = max(1, ceil(b2_len * 2 * pi / self.kspacing))
             n3 = max(1, ceil(b3_len * 2 * pi / self.kspacing))
         else:
-            raise ValueError("kspacing_definition must be either 'vasp' or 'pymatgen'.")
+            raise ValueError(
+                "kspacing_definition must be either 'vasp' or 'pymatgen'.")
 
         # For 2D periodicity, force the number of k-points in the z-direction to 1.
         if self.periodicity == '2d':
@@ -314,7 +319,8 @@ Gamma
         folder_name : str
             The directory in which to write the POTCAR.
         """
-        symbols = self.atoms.get_chemical_symbols()  # e.g. ['Al', 'W', 'C', ...]
+        symbols = self.atoms.get_chemical_symbols(
+        )  # e.g. ['Al', 'W', 'C', ...]
         if not symbols:
             raise ValueError("No elements found to build POTCAR.")
 
@@ -331,8 +337,10 @@ Gamma
         for element in elements_for_potcar:
             pot_subfolder = self.potcar_dict.get(element)
             if pot_subfolder is None:
-                raise ValueError(f"No POTCAR mapping found for element '{element}' in `potcar_dict`.")
-            potcar_path = os.path.join(PP_LIBRARY_PATH, pot_subfolder, "POTCAR")
+                raise ValueError(
+                    f"No POTCAR mapping found for element '{element}' in `potcar_dict`.")
+            potcar_path = os.path.join(
+                PP_LIBRARY_PATH, pot_subfolder, "POTCAR")
             if not os.path.exists(potcar_path):
                 raise FileNotFoundError(f"POTCAR not found at {potcar_path}")
             cmd += f" {potcar_path}"

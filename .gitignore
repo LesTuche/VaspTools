@@ -20,3 +20,15 @@ vasptools.egg-info/**
 vasptools/*
 !vasptools/**/*.py
 !vasptools/**/*.txt
+
+
+# Ignore API keys and sensitive files
+
+*.API*
+*.zip
+potpaw_PBE_6.4_from_vsc5
+
+
+
+
+

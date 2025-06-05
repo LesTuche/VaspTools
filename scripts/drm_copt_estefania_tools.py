@@ -3,7 +3,7 @@ import sys
 import numpy as np
 from ase.io import read
 
-main_path = '/Users/hprats/PycharmProjects/collaborations/drm_copt_estefania'
+#main_path = '/Users/hprats/PycharmProjects/collaborations/drm_copt_estefania'
 
 incar_tags_bulk = {
     # ionic relaxation
@@ -171,3 +171,5 @@ def get_vib_list(path, ignore_modes=0):
         vib_values.append(float(line.split()[-2]) / 1000.0)
 
     return np.array(vib_values)  # in eV
+
+
