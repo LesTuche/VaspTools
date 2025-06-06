@@ -13,7 +13,7 @@ from ase.constraints import FixAtoms
 # Vasptools imports
 from vasptools.structureopt import StructureOptimization
 from vasptools.vasp_recommended_pp import VASP_RECOMMENDED_PP
-from drm_copt_estefania_tools import incar_tags_slab, incar_tags_bulk
+from vasptools.drm_copt_estefania_tools import incar_tags_slab, incar_tags_bulk
 from typing import Tuple
 
 
