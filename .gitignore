@@ -10,16 +10,22 @@ vasptools.egg-info/
 vasptools.egg-info/**
 
 
-
+test*
 # Ignore API keys and sensitive files
 
 *.API*
 *.zip
 potpaw_PBE_6.4_from_vsc5
-POSCAR
-*POSCAR*
+
 *.poscar
 
+*POSCAR*
 
-
-
+*POTCAR*
+*INCAR*
+*KPOINTS*
+*CONTCAR*
+*WAVECAR*
+*CHGCAR*
+*OSZICAR*          
+*.cif*

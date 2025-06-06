@@ -133,14 +133,22 @@ class StructureOptimization:
         ----------
         folder_name : str, optional
             The directory in which to write the files. Default is 'bulk'.
-        """
-        if os.path.isdir(folder_name):
+
+                    if os.path.isdir(folder_name):
             warnings.warn(
                 f"The folder '{folder_name}' already exists. Doing nothing.",
                 UserWarning
             )
             return
 
+                            """
+
+        if os.path.isdir(folder_name):
+            warnings.warn(
+                f"The folder '{folder_name}' already exists. Doing nothing.",
+                UserWarning
+            )
+            return
         os.makedirs(folder_name, exist_ok=True)
         self._write_poscar(folder_name)
         self._write_incar(folder_name)

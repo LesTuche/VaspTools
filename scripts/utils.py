@@ -54,7 +54,7 @@ def make_poscar_from_mpid(mp_id, conventional_unite_cell=True, path: str = "") -
 
 
 def make_poscars_from_formula(formula: str, path: str = ""):
-    """    
+    """
     Void function to make a POSCAR file from a chemical formula.
 
     Creates POSCAR file for all materials with the given formula from the Materials Project database, where the structure is expereimentally observed
@@ -77,19 +77,21 @@ def make_poscars_from_formula(formula: str, path: str = ""):
         os.makedirs(path)
 
     with MPRester() as mpr:
+
         try:
-            structures = mpr.get_structures(
-                formula=formula, theoretical=False, fields=["material_id"])
+            structures = mpr.materials.summary.search(
+                formula="Pt", theoretical=False, fields=["material_id"])
+
         except Exception as e:
             print(f"Error fetching structures for formula {formula}: {e}")
             return []
         paths = []
         for struct in structures:
-            paths.append(make_poscar_from_mpid(mp_id=struct.mp_id))
+            paths.append(make_poscar_from_mpid(mp_id=struct.material_id))
         return paths
 
 
-def prepare_bulk_structure(material: str, incar_tags: dict, kspacing: float = 0.15, folder_path: str = ""):
+def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float = 0.15, folder_path: str = ""):
     """
     Prepare the bulk structure for a given material.
 
@@ -110,7 +112,7 @@ def prepare_bulk_structure(material: str, incar_tags: dict, kspacing: float = 0.
     None
     """
 
-    if folder_path:
+    if not folder_path:
         folder_path = os.getcwd()
 
     # Create directory if it doesn't exist
@@ -122,11 +124,12 @@ def prepare_bulk_structure(material: str, incar_tags: dict, kspacing: float = 0.
         filepaths.append(make_poscar_from_mpid(material, path=folder_path))
     else:
         # If a chemical formula is provided, download all experimental structures with this formula
-        filepaths.append(make_poscars_from_formula(material, path=folder_path))
+        filepaths = make_poscars_from_formula(
+            formula=material, path=folder_path)
 
     for filepath in filepaths:
         print(
-            f"Preparing input files for a bulk calculation of {material} for VASP.")
+            f"Preparing {filepath} files for a bulk calculation of {material} for VASP.")
 
         if not filepath:
             print(f"Failed to create POSCAR for {material}. Skipping.")
@@ -136,13 +139,26 @@ def prepare_bulk_structure(material: str, incar_tags: dict, kspacing: float = 0.
 
         atoms = read(filepath)
         # to avoid overwriting the original dictionary
-        incar_tags = deepcopy(incar_tags)
+        incar_tags = deepcopy(incar_tags_bulk)
 
         # Add or overwrite the default INCAR tags with the provided ones
-        incar_tags.update(incar_tags)
+        incar_tags.update(incar_tags_user)
 
         job = StructureOptimization(atoms, incar_tags=incar_tags, kspacing=kspacing,  kspacing_definition='vasp',
                                     potcar_dict=VASP_RECOMMENDED_PP, periodicity='3d',
                                     kpointstype='gamma')
-        print(f"Writing input files for {material} to {folder_path}")
-        job.write_input_files(folder_name=folder_path)
+        print(f"Writing input files for {material} to {folder_path}/bulk")
+        job.write_input_files(folder_name=folder_path+"/bulk")
+
+
+if __name__ == "__main__":
+    # Example usage
+    material = 'Pt'
+    incar_tags_user = {
+
+        'ISPIN': 2,
+
+    }
+    prepare_bulk_structure(material, incar_tags_user,
+                           kspacing=0.15, folder_path='Pt_bulk')
+    print(f"Bulk structure preparation for {material} completed.")
