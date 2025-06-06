@@ -1,10 +1,39 @@
+
+# General imports
 import os
+import re
+from copy import deepcopy
+
+# ASE and materialsproject imports
 from mp_api.client import MPRester
 from ase.io import read, write
+from ase.build import surface
+from ase.build.tools import sort
+from ase.constraints import FixAtoms
+# Vasptools imports
 from vasptools.structureopt import StructureOptimization
 from vasptools.vasp_recommended_pp import VASP_RECOMMENDED_PP
-from drm_copt_estefania_tools import incar_tags_bulk
-from copy import deepcopy
+from drm_copt_estefania_tools import incar_tags_slab, incar_tags_bulk
+from typing import Tuple
+
+
+def currate_contcar(filepath: str):
+
+    # This regex matches “/” followed by one or more decimal digits.
+    remove_num = re.compile(r'/[0-9A-Fa-f]+')
+
+    # Read all lines, stripping out “/12345…” whenever it appears:
+    with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+        new_lines = []
+        for line in f:
+            # If there’s a slash‐number sequence (e.g. “/17880443556”), remove it:
+            if '/' in line:
+                line = remove_num.sub('', line)
+            new_lines.append(line)
+
+     # Overwrite the same file with our modified lines:
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.writelines(new_lines)
 
 
 def make_poscar_from_mpid(mp_id, conventional_unite_cell=True, path: str = "") -> str:
@@ -156,14 +185,88 @@ def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float
                               "/bulk_structure_" + str(i+1))
 
 
+def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int], layers: int = 4, vacuum: int = 8, incar_tags_user: dict = None):
+    """
+    PRE: 
+
+    Expects that bulk_path has been created with prepare_bulk_structure function.
+    Expects that a contcar file is present in the bulk_path directory. 
+    Expects that the bulk_path directory is already created.
+
+
+
+    Prepare the slab structure and write VASP input files for a given bulk material.
+    Parameters
+    ----------
+    bulk_path : str
+        The path to the bulk structure files (e.g., 'Al2O3_bulk/bulk_structure_3'). 
+    layers : int, optional
+
+        The number of layers in the slab. Default is 4.
+    vacuum : int, optional
+        The vacuum thickness in Angstroms. Default is 8.   
+    incar_tags_user : dict, optional
+        A dictionary containing the INCAR tags for the VASP calculations. If None, default tags will be used.
+    Returns 
+    -------
+    None
+    """
+
+    if not os.path.exists(bulk_path + '/CONTCAR'):
+        raise FileNotFoundError(f"CONTCAR file  not found in: {bulk_path}")
+
+    # Curate Contcar file
+    currate_contcar(bulk_path + '/CONTCAR')
+
+    name = next((name for name in bulk_path.split(
+        '/') if "_bulk" in name), None)
+
+    bulk = read(bulk_path + '/CONTCAR')
+    slab = surface(bulk, miller_indices, layers=layers,
+                   vacuum=vacuum, periodic=True)
+    slab = slab.repeat((2, 2, 1))
+
+    slab.translate((0.5, 0.5, 0.0))
+    slab.pbc = (True, True, False)
+    slab.wrap()
+
+    # Constrain the bottom two layers
+    fix_constraint = FixAtoms(
+        indices=[atom.index for atom in slab if atom.position[2] < 0.5 * slab.cell[2, 2]])
+    slab.set_constraint(fix_constraint)
+    incar_tags = deepcopy(incar_tags_slab)
+    if incar_tags_user is not None:
+        incar_tags.update(incar_tags_user)
+    slab = sort(slab)
+
+    job = StructureOptimization(
+        atoms=slab,
+        incar_tags=incar_tags,
+        kspacing=0.15,
+        kspacing_definition='vasp',
+        kpointstype='gamma',
+        potcar_dict=VASP_RECOMMENDED_PP,
+        periodicity='2d',
+        # Example for Co, adjust as needed
+    )
+
+    job.write_input_files(folder_name=bulk_path + f"/{name}_111_slab")
+
+
 if __name__ == "__main__":
     # Example usage
-    material = 'Al2O3'  # or 'mp-1234' for a specific Materials Project ID
+    material = 'Pt'  # or 'mp-1234' for a specific Materials Project ID
     incar_tags_user = {
 
         'ISPIN': 2,
 
     }
-    prepare_bulk_structure(material, incar_tags_user,
-                           kspacing=0.15, folder_path='Al2O3_bulk')
-    print(f"Bulk structure preparation for {material} completed.")
+    # prepare_bulk_structure(material, incar_tags_user,
+    #                      kspacing=0.15, folder_path='Pt_bulk')
+    # print(f"Bulk structure preparation for {material} completed.")
+
+    # currate_contcar('Al2O3_bulk/bulk_structure_3/CONTCAR')
+
+    prepare_slab_structure(bulk_path='Pt_bulk/bulk_structure_1',
+                           miller_indices=(1, 1, 1), layers=4, vacuum=8,
+                           )
