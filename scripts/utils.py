@@ -80,13 +80,16 @@ def make_poscars_from_formula(formula: str, path: str = ""):
 
         try:
             structures = mpr.materials.summary.search(
-                formula="Pt", theoretical=False, fields=["material_id"])
+                formula=formula, theoretical=False, fields=["material_id", "formula_pretty"])
 
         except Exception as e:
             print(f"Error fetching structures for formula {formula}: {e}")
             return []
         paths = []
         for struct in structures:
+            print(
+                f"Downloading POSCAR for {struct.material_id} with formula {struct.formula_pretty}")
+            # Create a POSCAR file for each material
             paths.append(make_poscar_from_mpid(mp_id=struct.material_id))
         return paths
 
@@ -127,7 +130,7 @@ def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float
         filepaths = make_poscars_from_formula(
             formula=material, path=folder_path)
 
-    for filepath in filepaths:
+    for i, filepath in enumerate(filepaths):
         print(
             f"Preparing {filepath} files for a bulk calculation of {material} for VASP.")
 
@@ -147,18 +150,20 @@ def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float
         job = StructureOptimization(atoms, incar_tags=incar_tags, kspacing=kspacing,  kspacing_definition='vasp',
                                     potcar_dict=VASP_RECOMMENDED_PP, periodicity='3d',
                                     kpointstype='gamma')
-        print(f"Writing input files for {material} to {folder_path}/bulk")
-        job.write_input_files(folder_name=folder_path+"/bulk")
+        print(
+            f"Writing input files for {material} to {folder_path}/bulk_structure_{i+1}")
+        job.write_input_files(folder_name=folder_path +
+                              "/bulk_structure_" + str(i+1))
 
 
 if __name__ == "__main__":
     # Example usage
-    material = 'Pt'
+    material = 'Al2O3'  # or 'mp-1234' for a specific Materials Project ID
     incar_tags_user = {
 
         'ISPIN': 2,
 
     }
     prepare_bulk_structure(material, incar_tags_user,
-                           kspacing=0.15, folder_path='Pt_bulk')
+                           kspacing=0.15, folder_path='Al2O3_bulk')
     print(f"Bulk structure preparation for {material} completed.")
