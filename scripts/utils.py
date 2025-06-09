@@ -160,15 +160,16 @@ def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float
             formula=material, path=folder_path)
 
     for i, filepath in enumerate(filepaths):
-        print(
-            f"Preparing {filepath} files for a bulk calculation of {material} for VASP.")
 
         if not filepath:
             print(f"Failed to create POSCAR for {material}. Skipping.")
             continue
 
-        # Read the structure from the POSCAR file
+        print(
+            f"Preparing {filepath} files for a bulk calculation of {material} for VASP.")  # Read the structure from the POSCAR file
 
+        # get Id from the filepath
+        material_id = os.path.basename(filepath).split('.')[0]
         atoms = read(filepath)
         # to avoid overwriting the original dictionary
         incar_tags = deepcopy(incar_tags_bulk)
@@ -182,15 +183,15 @@ def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float
         print(
             f"Writing input files for {material} to {folder_path}/bulk_structure_{i+1}")
         job.write_input_files(folder_name=folder_path +
-                              "/bulk_structure_" + str(i+1))
+                              f"/bulk_structure_{material_id}")
 
 
 def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int], layers: int = 4, vacuum: int = 8, incar_tags_user: dict = None):
     """
-    PRE: 
+    PRE:
 
     Expects that bulk_path has been created with prepare_bulk_structure function.
-    Expects that a contcar file is present in the bulk_path directory. 
+    Expects that a contcar file is present in the bulk_path directory.
     Expects that the bulk_path directory is already created.
 
 
@@ -199,15 +200,15 @@ def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int],
     Parameters
     ----------
     bulk_path : str
-        The path to the bulk structure files (e.g., 'Al2O3_bulk/bulk_structure_3'). 
+        The path to the bulk structure files (e.g., 'Al2O3_bulk/bulk_structure_3').
     layers : int, optional
 
         The number of layers in the slab. Default is 4.
     vacuum : int, optional
-        The vacuum thickness in Angstroms. Default is 8.   
+        The vacuum thickness in Angstroms. Default is 8.
     incar_tags_user : dict, optional
         A dictionary containing the INCAR tags for the VASP calculations. If None, default tags will be used.
-    Returns 
+    Returns
     -------
     None
     """
