@@ -126,7 +126,7 @@ def make_poscars_from_formula(formula: str, path: str = ""):
         return paths
 
 
-def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float = 0.15, folder_path: str = ""):
+def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float = 0.15, folder_path: str = "", file_path: str = ""):
     """
     Prepare the bulk structure for a given material.
 
@@ -141,6 +141,8 @@ def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float
         The k-point spacing for the calculations. Default is 0.15.
     folder_name : str, optional
         The name of the folder where the input files will be saved. If None, it defaults to the current working directory.
+    file_path : str, optional
+     Path to the POSCAR file. If provided, it will be used instead of downloading from Materials Project.
 
     Returns
     -------
@@ -153,14 +155,26 @@ def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float
     # Create directory if it doesn't exist
 
     os.makedirs(folder_path, exist_ok=True)
+
     filepaths = []
-    if material.startswith('mp-'):
-        # If a Materials Project ID is provided
-        filepaths.append(make_poscar_from_mpid(material, path=folder_path))
-    else:
-        # If a chemical formula is provided, download all experimental structures with this formula
-        filepaths = make_poscars_from_formula(
-            formula=material, path=folder_path)
+
+    if file_path:
+        # If a file path is provided, use it directly
+        if os.path.exists(file_path):
+            filepaths.append(file_path)
+        else:
+            print(f"File {file_path} does not exist. Skipping.")
+            print(
+                f"Fall back to downloading POSCAR from Materials Project for {material}.")
+
+            if material.startswith('mp-'):
+                # If a Materials Project ID is provided
+                filepaths.append(make_poscar_from_mpid(
+                    material, path=folder_path))
+            else:
+                # If a chemical formula is provided, download all experimental structures with this formula
+                filepaths = make_poscars_from_formula(
+                    formula=material, path=folder_path)
 
     for i, filepath in enumerate(filepaths):
 
@@ -170,7 +184,8 @@ def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float
         print(
             f"Preparing {filepath} files for a bulk calculation of {material} for VASP.")
         # Read the structure from the POSCAR file
-        material_id = os.path.basename(filepath).split('.')[0]
+        material_id = os.path.basename(filepath).split(
+            '.')[0] if not file_path else material
         atoms = read(filepath)
         # to avoid overwriting the original dictionary
         incar_tags = deepcopy(incar_tags_bulk)
@@ -182,7 +197,7 @@ def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float
                                     potcar_dict=VASP_RECOMMENDED_PP, periodicity='3d',
                                     kpointstype='gamma')
         print(
-            f"Writing input files for {material} to {folder_path}/bulk_structure_{i+1}")
+            f"Writing input files for {material} to {folder_path}/bulk_structure_{material_id}")
         job.write_input_files(folder_name=folder_path +
                               f"/bulk_structure_{material_id}")
 
