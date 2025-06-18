@@ -234,9 +234,7 @@ def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int],
 
     # Curate Contcar file
     currate_contcar(bulk_path + '/CONTCAR')
-
-    name = next((name for name in bulk_path.split(
-        '/') if "_bulk" in name), None)
+    name = bulk_path.split('/')[-1].split("bulk_structure_")[-1]
 
     bulk = read(bulk_path + '/CONTCAR')
     slab = surface(bulk, miller_indices, layers=layers,
@@ -267,7 +265,8 @@ def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int],
         # Example for Co, adjust as needed
     )
 
-    job.write_input_files(folder_name=bulk_path + f"/{name}_111_slab")
+    job.write_input_files(folder_name=bulk_path +
+                          f"/{name}_{str(miller_indices)}__slab")
 
 
 if __name__ == "__main__":
