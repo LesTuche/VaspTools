@@ -202,7 +202,7 @@ def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float
                               f"/bulk_structure_{material_id}")
 
 
-def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int], layers: int = 4, vacuum: int = 8, incar_tags_user: dict = None):
+def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int], layers: int = 4, vacuum: int = 12, incar_tags_user: dict = None):
     """
     PRE:
 
@@ -221,7 +221,7 @@ def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int],
 
         The number of layers in the slab. Default is 4.
     vacuum : int, optional
-        The vacuum thickness in Angstroms. Default is 8.
+        The vacuum thickness in Angstroms. Default is 12.
     incar_tags_user : dict, optional
         A dictionary containing the INCAR tags for the VASP calculations. If None, default tags will be used.
     Returns
