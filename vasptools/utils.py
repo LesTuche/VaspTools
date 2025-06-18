@@ -266,7 +266,7 @@ def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int],
     )
 
     job.write_input_files(folder_name=bulk_path +
-                          f"/{name}_{str(miller_indices)}__slab")
+                          f"/{name}_{miller_indices[0]}-{miller_indices[1]}-{miller_indices[2]}__slab")
 
 
 if __name__ == "__main__":
