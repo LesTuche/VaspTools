@@ -202,7 +202,7 @@ def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float
                               f"/bulk_structure_{material_id}")
 
 
-def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int], layers: int = 4, vacuum: int = 12, incar_tags_user: dict = None):
+def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int], layers: int = 4, vacuum: int = 6, incar_tags_user: dict = None):
     """
     PRE:
 
@@ -221,7 +221,7 @@ def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int],
 
         The number of layers in the slab. Default is 4.
     vacuum : int, optional
-        The vacuum thickness in Angstroms. Default is 12.
+        The vacuum thickness in Angstroms on both sides of the slab. Default is 6.
     incar_tags_user : dict, optional
         A dictionary containing the INCAR tags for the VASP calculations. If None, default tags will be used.
     Returns
@@ -266,7 +266,25 @@ def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int],
     )
 
     job.write_input_files(folder_name=bulk_path +
-                          f"/{name}_{miller_indices[0]}-{miller_indices[1]}-{miller_indices[2]}__slab")
+                          f"/{name}_{miller_indices[0]}-{miller_indices[1]}-{miller_indices[2]}_{vacuum*2}_A_slab")
+
+
+def hydroxylate_surface(slab_path: str, OH_coverage: float):
+    """
+    Hydroxylate the surface of a slab structure.
+
+
+    Parameters
+    ----------
+    slab_path : str
+        The path to the slab structure file (e.g., 'Pt_bulk/bulk_structure_1/slab').
+    OH_coverage : float
+        The coverage of hydroxyl groups on the surface (e.g., 0.5 for 50% coverage).
+
+    Returns List of surface structure with all possible permuations
+    -------
+    None
+    """
 
 
 if __name__ == "__main__":
