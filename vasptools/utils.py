@@ -202,7 +202,7 @@ def prepare_bulk_structure(material: str, incar_tags_user: dict, kspacing: float
                               f"/bulk_structure_{material_id}")
 
 
-def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int], layers: int = 4, vacuum: int = 6, incar_tags_user: dict = None):
+def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int], layers: int = 4, vacuum: int = 6, slab_repeat: Tuple[int, int, int] = (2, 2, 1), incar_tags_user: dict = None):
     """
     PRE:
 
