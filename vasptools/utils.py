@@ -239,7 +239,7 @@ def prepare_slab_structure(bulk_path: str, miller_indices: Tuple[int, int, int],
     bulk = read(bulk_path + '/CONTCAR')
     slab = surface(bulk, miller_indices, layers=layers,
                    vacuum=vacuum, periodic=True)
-    slab = slab.repeat((2, 2, 1))
+    slab = slab.repeat(slab_repeat)
 
     slab.translate((0.5, 0.5, 0.0))
     slab.pbc = (True, True, False)
